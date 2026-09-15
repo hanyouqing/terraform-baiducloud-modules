@@ -1,0 +1,65 @@
+# Copy to catalog.hcl (gitignored secrets stay in env files).
+# Baidu 企业组织 / OU / SCP must be created in Console or via OpenAPI —
+# the baiducloud Terraform provider has no organization resources today.
+
+locals {
+  organization = "example-corp"
+
+  # Logical multi-account topology (map account_name => metadata)
+  accounts = {
+    management = {
+      account_id   = "REPLACE_MANAGEMENT_ACCOUNT_ID"
+      account_type = "management"
+      ou           = "Root"
+      regions      = ["bj"]
+      description  = "Enterprise org payer / management account"
+    }
+    security = {
+      account_id   = "REPLACE_SECURITY_ACCOUNT_ID"
+      account_type = "security"
+      ou           = "Security"
+      regions      = ["bj"]
+      description  = "Log archive, security tooling, break-glass"
+    }
+    shared = {
+      account_id   = "REPLACE_SHARED_ACCOUNT_ID"
+      account_type = "shared"
+      ou           = "Infrastructure"
+      regions      = ["bj"]
+      description  = "Shared networking, DNS, CDN, artifact BOS"
+    }
+    workload-dev = {
+      account_id   = "REPLACE_DEV_ACCOUNT_ID"
+      account_type = "workload"
+      ou           = "Workloads/NonProd"
+      regions      = ["bj"]
+      description  = "Development workloads"
+    }
+    workload-prod = {
+      account_id   = "REPLACE_PROD_ACCOUNT_ID"
+      account_type = "workload"
+      ou           = "Workloads/Prod"
+      regions      = ["bj"]
+      description  = "Production workloads"
+    }
+  }
+
+  # Recommended OU tree (documentational — create in Console)
+  organizational_units = [
+    "Root",
+    "Security",
+    "Infrastructure",
+    "Workloads",
+    "Workloads/NonProd",
+    "Workloads/Prod",
+    "Sandbox",
+  ]
+
+  # Recommended SCPs (documentational)
+  service_control_policies = [
+    "DenyLeaveOrganization",
+    "DenyDisableCloudTrailOrAuditEquivalents",
+    "RequireRootMFA",
+    "RestrictRegionsToApprovedList",
+  ]
+}
